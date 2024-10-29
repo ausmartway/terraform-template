@@ -1,0 +1,45 @@
+name: Deployment Workflow
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+        - info
+        - debug
+
+jobs:
+  retrieve-secret:
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Import Secrets
+        uses: hashicorp/vault-action@v2.4.0
+
+        with:
+          url: https://vault-cluster-public-vault-bb7b95a8.c950b5f7.z1.hashicorp.cloud:8200
+          namespace: admin
+          role: default
+          method: jwt
+          path: github_repo_jwt
+          jwtGithubAudience: eXVsZWkncyBWYXVsdAo= # set the GitHub token's aud claim
+
+          secrets: |
+            Corebanking/production/data/secret USERNAME | USERNAME ;
+            Corebanking/production/data/secret PASSWORD | USERNAME ;
+      - name: Print Secrets
+        run: |
+          echo USERNAME
+          echo USERNAME
+          env
+    
